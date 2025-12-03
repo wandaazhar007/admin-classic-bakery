@@ -181,3 +181,24 @@ img {
   color: $color-success;
   font-size: 0.85rem;
 }
+
+.app-layout {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-shell {
+  display: flex;
+  min-height: calc(100vh - 60px); // navbar height (approx)
+}
+
+/* sidebar takes space only on desktop */
+.app-content {
+  flex: 1;
+  padding: 1rem;
+
+  @include respond-to(md) {
+    padding: 1.5rem 1.75rem 2rem;
+  }
+}

@@ -1,0 +1,42 @@
+@use "../../../styles/variables" as *;
+@use "../../../styles/responsive" as *;
+
+.footer {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  border-top: 1px solid rgba($color-border-soft, 0.7);
+  background-color: $color-bg-card;
+}
+
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $space-sm $space-md;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: $color-text-muted;
+
+  @include respond-to(md) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.8rem;
+  }
+}
+
+.left,
+.right {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.heart {
+  margin: 0 0.15rem;
+}
+
+.name {
+  font-weight: 600;
+  color: $color-purple;
+}
