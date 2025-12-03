@@ -1,0 +1,151 @@
+@use "../../../styles/variables" as *;
+@use "../../../styles/responsive" as *;
+
+.navbar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 20;
+
+  /* 🔥 Force full-viewport width, even if parent is a centered container */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+
+  background: rgba($color-bg-card, 0.96);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba($color-border-soft, 0.7);
+}
+
+/* Now inner content can be nicely centered with padding */
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 $space-md;
+  height: 60px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-md;
+
+  @include respond-to(md) {
+    height: 68px;
+  }
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-sm;
+}
+
+.logoWrapper {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: linear-gradient(135deg,
+      $color-pink-soft,
+      rgba($color-purple, 0.18));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+
+  @include respond-to(md) {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+.logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+
+  @include respond-to(md) {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: $color-text-main;
+  letter-spacing: 0.03em;
+
+  @include respond-to(md) {
+    font-size: 1.18rem;
+  }
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-xs;
+
+  @include respond-to(md) {
+    gap: $space-sm;
+  }
+}
+
+.actionButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: $color-text-muted;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.3rem 0.55rem;
+  border-radius: $radius-pill;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
+
+  @include respond-to(md) {
+    font-size: 0.9rem;
+    padding: 0.35rem 0.75rem;
+  }
+
+  &:hover {
+    background-color: rgba($color-purple, 0.08);
+    color: $color-text-main;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* Icon sizing uses width/height so they render correctly */
+.icon {
+  width: 1rem;
+  height: 1rem;
+
+  @include respond-to(md) {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+}
+
+.actionLabel {
+  display: none;
+
+  @include respond-to(sm) {
+    display: inline-block;
+  }
+}
+
+.logout {
+  color: $color-danger;
+
+  &:hover {
+    background-color: rgba($color-danger, 0.08);
+    color: $color-danger;
+  }
+}
