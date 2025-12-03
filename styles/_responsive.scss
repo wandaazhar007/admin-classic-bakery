@@ -1,0 +1,48 @@
+// src/styles/_responsive.scss
+@use "./variables" as *;
+
+// Generic respond mixin
+@mixin respond-to($breakpoint) {
+  @if $breakpoint ==sm {
+    @media (min-width: $bp-sm) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==md {
+    @media (min-width: $bp-md) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==lg {
+    @media (min-width: $bp-lg) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==xl {
+    @media (min-width: $bp-xl) {
+      @content;
+    }
+  }
+}
+
+// Utility containers
+@mixin container {
+  width: 100%;
+  max-width: $max-width-app;
+  margin: 0 auto;
+  padding-inline: $space-md;
+
+  @include respond-to(md) {
+    padding-inline: $space-lg;
+  }
+}
+
+// Utility for card layout
+@mixin card-surface {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-soft;
+}

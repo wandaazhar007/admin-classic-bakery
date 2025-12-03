@@ -1,0 +1,62 @@
+// src/styles/_variables.scss
+
+// ────────────────────────────────────────────────
+// Colors — Classic Bakery Admin
+// ────────────────────────────────────────────────
+$color-bg-page: #f7f3ff;
+$color-bg-card: #ffffff;
+
+$color-pink: #ffc1dc;
+$color-pink-soft: #ffe5f1;
+
+$color-purple: #b493ff;
+$color-purple-deep: #7c57d3;
+
+$color-accent: #ffb347;
+$color-accent-soft: #fff2da;
+
+$color-text-main: #2b2240;
+$color-text-muted: #7c7494;
+$color-border-soft: #e2ddf7;
+$color-danger: #e45858;
+$color-success: #2bbf7f;
+
+// ────────────────────────────────────────────────
+// Typography
+// ────────────────────────────────────────────────
+$font-family-base: system-ui, -apple-system, BlinkMacSystemFont, "Poppins",
+  "Nunito", sans-serif;
+
+$font-size-base: 16px;
+$line-height-base: 1.5;
+
+// ────────────────────────────────────────────────
+// Layout
+// ────────────────────────────────────────────────
+$max-width-app: 1200px;
+
+$radius-sm: 8px;
+$radius-md: 14px;
+$radius-lg: 20px;
+$radius-pill: 999px;
+
+$shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.06);
+
+// ────────────────────────────────────────────────
+// Spacing scale
+// ────────────────────────────────────────────────
+$space-xxs: 0.25rem;
+$space-xs: 0.5rem;
+$space-sm: 0.75rem;
+$space-md: 1rem;
+$space-lg: 1.5rem;
+$space-xl: 2rem;
+$space-xxl: 3rem;
+
+// ────────────────────────────────────────────────
+// Breakpoints
+// ────────────────────────────────────────────────
+$bp-sm: 480px;
+$bp-md: 768px;
+$bp-lg: 1024px;
+$bp-xl: 1280px;
