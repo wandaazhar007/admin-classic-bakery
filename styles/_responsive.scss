@@ -1,48 +1,59 @@
-// src/styles/_responsive.scss
-@use "./variables" as *;
+@use "./variables" as v;
 
-// Generic respond mixin
-@mixin respond-to($breakpoint) {
-  @if $breakpoint ==sm {
-    @media (min-width: $bp-sm) {
-      @content;
-    }
-  }
-
-  @else if $breakpoint ==md {
-    @media (min-width: $bp-md) {
-      @content;
-    }
-  }
-
-  @else if $breakpoint ==lg {
-    @media (min-width: $bp-lg) {
-      @content;
-    }
-  }
-
-  @else if $breakpoint ==xl {
-    @media (min-width: $bp-xl) {
-      @content;
-    }
+// Media query helpers (mobile-first)
+@mixin up($bp) {
+  @media (min-width: $bp) {
+    @content;
   }
 }
 
-// Utility containers
-@mixin container {
-  width: 100%;
-  max-width: $max-width-app;
-  margin: 0 auto;
-  padding-inline: $space-md;
+@mixin down($bp) {
 
-  @include respond-to(md) {
-    padding-inline: $space-lg;
+  // small epsilon so "down(md)" doesn't overlap with "up(md)"
+  @media (max-width: calc(#{$bp} - 0.02rem)) {
+    @content;
   }
 }
 
-// Utility for card layout
-@mixin card-surface {
-  background-color: $color-bg-card;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-soft;
+@mixin between($min, $max) {
+  @media (min-width: $min) and (max-width: calc(#{$max} - 0.02rem)) {
+    @content;
+  }
+}
+
+// Common shortcuts
+@mixin sm-up {
+  @include up(v.$bp-sm) {
+    @content;
+  }
+}
+
+@mixin md-up {
+  @include up(v.$bp-md) {
+    @content;
+  }
+}
+
+@mixin lg-up {
+  @include up(v.$bp-lg) {
+    @content;
+  }
+}
+
+@mixin xl-up {
+  @include up(v.$bp-xl) {
+    @content;
+  }
+}
+
+@mixin md-down {
+  @include down(v.$bp-md) {
+    @content;
+  }
+}
+
+@mixin lg-down {
+  @include down(v.$bp-lg) {
+    @content;
+  }
 }

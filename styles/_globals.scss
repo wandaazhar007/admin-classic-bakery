@@ -1,204 +1,258 @@
-// src/styles/_globals.scss
-@use "./variables" as *;
-@use "./responsive" as *;
+@use "./variables" as v;
+@use "./responsive" as r;
 
-// ────────────────────────────────────────────────
-// Reset-ish base
-// ────────────────────────────────────────────────
+/* ────────────────────────────────────────────────
+   Base / Reset
+   ──────────────────────────────────────────────── */
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-html,
+html {
+  font-size: 100%; // keep REM predictable (1rem = browser default)
+}
+
 body {
-  padding: 0;
   margin: 0;
+  font-family: v.$font-sans-rounded;
+  font-size: v.$fs-md;
+  line-height: v.$lh-normal;
+  color: v.$color-text-main;
+  background: v.$color-cream;
 }
 
-body {
-  font-family: $font-family-base;
-  font-size: $font-size-base;
-  line-height: $line-height-base;
-  background-color: $color-bg-page;
-  color: $color-text-main;
-  -webkit-font-smoothing: antialiased;
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
-// Links & buttons
 a {
   color: inherit;
   text-decoration: none;
 }
 
-button {
-  font-family: inherit;
-  cursor: pointer;
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
 }
 
-// Images
-img {
-  max-width: 100%;
-  display: block;
+:focus-visible {
+  outline: none;
+  box-shadow: v.$focus-ring;
+  border-radius: v.$radius-sm;
 }
 
-// ────────────────────────────────────────────────
-// App shell
-// ────────────────────────────────────────────────
-.app-shell {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+/* ────────────────────────────────────────────────
+   App layout helpers (optional utility classes)
+   ──────────────────────────────────────────────── */
 
-.app-main {
-  flex: 1;
-  padding-block: $space-xl;
-  background: radial-gradient(circle at top left,
-      $color-pink-soft 0,
-      $color-bg-page 40%,
-      #ffffff 85%);
-}
+.container {
+  width: 100%;
+  max-width: v.$container-max;
+  margin-inline: auto;
+  padding-inline: v.$space-4;
 
-// Generic page container
-.page-container {
-  @include container;
-}
-
-// Card utility for pages
-.page-card {
-  @include card-surface;
-  padding: $space-lg;
-}
-
-// ────────────────────────────────────────────────
-// Typography helpers
-// ────────────────────────────────────────────────
-.h1 {
-  font-size: 1.9rem;
-  font-weight: 700;
-  margin-bottom: $space-xs;
-
-  @include respond-to(md) {
-    font-size: 2.1rem;
+  @include r.md-up {
+    padding-inline: v.$space-6;
   }
 }
 
-.h2 {
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin-bottom: $space-xs;
+.page {
+  padding: v.$space-4;
+
+  @include r.md-up {
+    padding: v.$space-6;
+  }
 }
 
-.text-muted {
-  color: $color-text-muted;
-  font-size: 0.9rem;
+.card {
+  background: v.$color-white;
+  border: v.$border-1 solid v.$color-border-soft;
+  border-radius: v.$radius-lg;
+  box-shadow: v.$shadow-sm;
+  padding: v.$space-4;
+
+  @include r.md-up {
+    padding: v.$space-6;
+  }
 }
 
-// ────────────────────────────────────────────────
-// Form elements
-// ────────────────────────────────────────────────
+/* ────────────────────────────────────────────────
+   Form elements (clean + rounded)
+   ──────────────────────────────────────────────── */
+
 .input,
-.select,
-.textarea {
+select,
+textarea {
   width: 100%;
-  padding: 0.6rem 0.8rem;
-  border-radius: $radius-md;
-  border: 1px solid $color-border-soft;
-  background-color: #ffffff;
-  font-size: 0.9rem;
-  outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  border: v.$border-1 solid v.$color-border-soft;
+  border-radius: v.$radius-md;
+  padding: v.$space-3 v.$space-4;
+  background: v.$color-white;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
 
   &:focus {
-    border-color: $color-purple;
-    box-shadow: 0 0 0 2px rgba(180, 147, 255, 0.25);
+    border-color: v.$color-purple;
+    box-shadow: v.$focus-ring;
+    outline: none;
+  }
+
+  &::placeholder {
+    color: v.$color-text-muted;
   }
 }
 
-.textarea {
-  resize: vertical;
-  min-height: 120px;
+label {
+  display: inline-block;
+  font-size: v.$fs-sm;
+  color: v.$color-text-muted;
+  margin-bottom: v.$space-2;
 }
+
+/* ────────────────────────────────────────────────
+   Buttons
+   ──────────────────────────────────────────────── */
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
-  padding: 0.55rem 1.2rem;
-  border-radius: $radius-pill;
+  gap: v.$space-2;
   border: none;
-  font-size: 0.9rem;
-  font-weight: 600;
+  border-radius: v.$radius-pill;
+  padding: v.$space-3 v.$space-5;
   cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
-}
-
-.btn-primary {
-  @extend .btn;
-  background: $color-purple;
-  color: #ffffff;
-  box-shadow: 0 10px 22px rgba(180, 147, 255, 0.4);
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 12px 26px rgba(180, 147, 255, 0.45);
-  }
+  font-weight: 700;
+  font-size: v.$fs-sm;
+  line-height: 1;
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
 
   &:active {
-    transform: translateY(0);
-    box-shadow: 0 6px 14px rgba(180, 147, 255, 0.35);
+    transform: translateY(0.0625rem);
   }
 
   &:disabled {
-    opacity: 0.7;
-    cursor: default;
-    box-shadow: none;
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 }
 
-.btn-ghost {
-  @extend .btn;
-  background: transparent;
-  color: $color-text-main;
-  border-radius: $radius-pill;
-  padding-inline: $space-md;
+.btnPrimary {
+  background: v.$color-purple;
+  color: v.$color-white;
+  box-shadow: v.$shadow-sm;
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.8);
+    filter: brightness(0.98);
+    box-shadow: v.$shadow-md;
   }
 }
 
-// Status text
-.text-error {
-  color: $color-danger;
-  font-size: 0.85rem;
+.btnSoft {
+  background: v.$color-purple-soft;
+  color: v.$color-text-main;
+
+  &:hover {
+    filter: brightness(0.98);
+  }
 }
 
-.text-success {
-  color: $color-success;
-  font-size: 0.85rem;
+.btnDanger {
+  background: v.$color-danger;
+  color: v.$color-white;
+
+  &:hover {
+    filter: brightness(0.98);
+  }
 }
 
-.app-layout {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
+/* ────────────────────────────────────────────────
+   Tables (mobile friendly)
+   ──────────────────────────────────────────────── */
+
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: v.$radius-lg;
+  border: v.$border-1 solid v.$color-border-soft;
+  background: v.$color-white;
 }
 
-.app-shell {
-  display: flex;
-  min-height: calc(100vh - 60px); // navbar height (approx)
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 40rem; // allows horizontal scroll on mobile
 }
 
-/* sidebar takes space only on desktop */
-.app-content {
-  flex: 1;
-  padding: 1rem;
+th,
+td {
+  text-align: left;
+  padding: v.$space-3 v.$space-4;
+  border-bottom: v.$border-1 solid v.$color-border-soft;
+  font-size: v.$fs-sm;
+}
 
-  @include respond-to(md) {
-    padding: 1.5rem 1.75rem 2rem;
+th {
+  font-weight: 800;
+  color: v.$color-text-main;
+  background: v.$color-pink-soft;
+}
+
+tbody tr:hover {
+  background: v.$color-cream;
+}
+
+/* ────────────────────────────────────────────────
+   Small utilities
+   ──────────────────────────────────────────────── */
+
+.muted {
+  color: v.$color-text-muted;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: v.$space-2;
+  padding: v.$space-1 v.$space-3;
+  border-radius: v.$radius-pill;
+  font-size: v.$fs-xs;
+  font-weight: 800;
+  border: v.$border-1 solid v.$color-border-soft;
+  background: v.$color-white;
+}
+
+.badgeSuccess {
+  border-color: rgba(59, 178, 115, 0.35);
+  background: rgba(59, 178, 115, 0.12);
+}
+
+.badgeDanger {
+  border-color: rgba(255, 107, 107, 0.35);
+  background: rgba(255, 107, 107, 0.12);
+}
+
+/* ────────────────────────────────────────────────
+   Responsive tweaks
+   ──────────────────────────────────────────────── */
+
+.hideOnMobile {
+  @include r.lg-down {
+    display: none !important;
+  }
+}
+
+.hideOnDesktop {
+  @include r.lg-up {
+    display: none !important;
   }
 }
