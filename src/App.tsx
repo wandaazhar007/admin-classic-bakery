@@ -5,6 +5,9 @@ import Footer from "./components/footer/Footer";
 
 import ProductsPage from "./pages/ProductsPage";
 import ProductCreatePage from "./pages/ProductCreatePage";
+import LoginPage from "./pages/LoginPage";
+
+import { useAuth } from "./context/AuthContext";
 
 type PageInfo = {
   title: string;
@@ -12,6 +15,8 @@ type PageInfo = {
 };
 
 export default function App() {
+  const { user, loading, logout } = useAuth();
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [path, setPath] = useState<string>("");
 
@@ -25,8 +30,9 @@ export default function App() {
     []
   );
 
-  const navigate = (to: string) => {
-    window.history.pushState({}, "", to);
+  const navigate = (to: string, mode: "push" | "replace" = "push") => {
+    if (mode === "replace") window.history.replaceState({}, "", to);
+    else window.history.pushState({}, "", to);
     window.dispatchEvent(new PopStateEvent("popstate"));
   };
 
@@ -48,15 +54,31 @@ export default function App() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // Guard: before login, user cannot access other pages
+  useEffect(() => {
+    if (loading) return;
+
+    if (!user) {
+      if (path !== "/login") navigate("/login", "replace");
+      setIsSidebarOpen(false);
+      return;
+    }
+
+    // after login: if still on /login, bring to dashboard
+    if (user && path === "/login") {
+      navigate("/dashboard", "replace");
+    }
+  }, [user, loading, path]);
+
   const currentTitle =
     pages.find((p) => path === p.path || path.startsWith(`${p.path}/`))?.title ??
     "Welcome";
 
   const renderContent = () => {
     if (path === "/produk") return <ProductsPage onNavigate={navigate} />;
-    if (path === "/produk/tambah") return <ProductCreatePage onNavigate={navigate} />;
+    if (path === "/produk/tambah")
+      return <ProductCreatePage onNavigate={navigate} />;
 
-    // minimal placeholders for now
     if (path === "/dashboard") {
       return (
         <div className="card">
@@ -111,7 +133,6 @@ export default function App() {
       );
     }
 
-    // default route
     return (
       <div className="card">
         <div className="cardHeader">
@@ -141,15 +162,38 @@ export default function App() {
     );
   };
 
+  // Full-screen loading (wait for Firebase auth state)
+  if (loading) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "1.4rem",
+          fontWeight: 900,
+        }}
+      >
+        Loading...
+      </div>
+    );
+  }
+
+  // Not logged in: only show login page
+  if (!user) {
+    return <LoginPage onSuccess={() => navigate("/dashboard", "replace")} />;
+  }
+
+  // Logged in: show full layout
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar
         onToggleSidebar={() => setIsSidebarOpen(true)}
         userLabel="Admin"
-        onLogoutClick={() => {
-          // wire to AuthContext later (you already have it)
-          // eslint-disable-next-line no-alert
-          alert("Logout clicked (wire to AuthContext later).");
+        onLogoutClick={async () => {
+          await logout();
+          navigate("/login", "replace");
         }}
         onProfileClick={() => {
           // eslint-disable-next-line no-alert
@@ -173,7 +217,6 @@ export default function App() {
             }}
           >
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-
             <main style={{ flex: 1, minWidth: 0 }}>{renderContent()}</main>
           </div>
         </div>
