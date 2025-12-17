@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Navbar from "./components/navbar/Navbar";
 import Sidebar from "./components/sidebar/Sidebar";
+import Footer from "./components/footer/Footer";
 
 type PageInfo = {
   title: string;
@@ -32,7 +33,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // If user changes to desktop size while sidebar open, keep it safe by closing overlay state
     const onResize = () => {
       if (window.innerWidth >= 768) setIsSidebarOpen(false);
     };
@@ -41,11 +41,11 @@ export default function App() {
   }, []);
 
   const currentTitle =
-    pages.find((p) => p.path === path || path.startsWith(`${p.path}/`))?.title ??
+    pages.find((p) => path === p.path || path.startsWith(`${p.path}/`))?.title ??
     "Welcome";
 
   return (
-    <div>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar
         onToggleSidebar={() => setIsSidebarOpen(true)}
         userLabel="Admin"
@@ -64,43 +64,51 @@ export default function App() {
         }}
       />
 
-      {/* This container aligns sidebar left edge with navbar inner container */}
-      <div className="container">
-        <div
-          style={{
-            display: "flex",
-            alignItems: "stretch",
-            gap: "1.6rem",
-            paddingTop: "1.6rem",
-            paddingBottom: "1.6rem",
-          }}
-        >
-          <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <div style={{ flex: 1 }}>
+        {/* Container aligns sidebar left edge with navbar inner container */}
+        <div className="container">
+          <div
+            style={{
+              display: "flex",
+              alignItems: "stretch",
+              gap: "1.6rem",
+              paddingTop: "1.6rem",
+              paddingBottom: "1.6rem",
+            }}
+          >
+            <Sidebar
+              isOpen={isSidebarOpen}
+              onClose={() => setIsSidebarOpen(false)}
+            />
 
-          <main style={{ flex: 1, minWidth: 0 }}>
-            <div className="card">
-              <div className="cardHeader">
-                <div style={{ fontSize: "1.8rem", fontWeight: 900 }}>
-                  {currentTitle}
+            <main style={{ flex: 1, minWidth: 0 }}>
+              <div className="card">
+                <div className="cardHeader">
+                  <div style={{ fontSize: "1.8rem", fontWeight: 900 }}>
+                    {currentTitle}
+                  </div>
+                  <div className="muted" style={{ marginTop: "0.4rem" }}>
+                    Current path: {path || "/"}
+                  </div>
                 </div>
-                <div className="muted" style={{ marginTop: "0.4rem" }}>
-                  Current path: {path || "/"}
+
+                <div className="cardBody">
+                  <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>
+                    Layout sudah aktif ✅
+                  </div>
+                  <p className="muted" style={{ marginTop: "0.8rem" }}>
+                    Navbar + Sidebar + Footer sudah muncul. Di mobile, klik hamburger
+                    untuk membuka sidebar, klik overlay / tombol X / Escape untuk
+                    menutup.
+                  </p>
                 </div>
               </div>
-
-              <div className="cardBody">
-                <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>
-                  Layout sudah aktif ✅
-                </div>
-                <p className="muted" style={{ marginTop: "0.8rem" }}>
-                  Navbar + Sidebar sudah muncul. Di mobile, klik hamburger untuk
-                  membuka sidebar, klik overlay / tombol X / Escape untuk menutup.
-                </p>
-              </div>
-            </div>
-          </main>
+            </main>
+          </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

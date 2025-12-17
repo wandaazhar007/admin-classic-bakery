@@ -1,42 +1,87 @@
-@use "../../../styles/variables" as *;
-@use "../../../styles/responsive" as *;
+@use "../../../styles/variables" as v;
+@use "../../../styles/responsive" as r;
 
 .footer {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  border-top: 1px solid rgba($color-border-soft, 0.7);
-  background-color: $color-bg-card;
+  border-top: v.$border;
+  background: v.$color-white;
 }
 
 .inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: $space-sm $space-md;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  font-size: 0.78rem;
-  color: $color-text-muted;
+  @include r.container;
 
-  @include respond-to(md) {
-    flex-direction: row;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 1.2rem;
+  padding-top: 1.6rem;
+  padding-bottom: 1.6rem;
+
+  @include r.down(md) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    justify-content: space-between;
-    font-size: 0.8rem;
+    text-align: center;
+
+    gap: 0.8rem;
+    padding-top: 1.6rem;
+    padding-bottom: 1.6rem;
   }
 }
 
-.left,
-.right {
-  margin: 0;
+.left {
+  color: v.$color-text-muted;
+  font-size: 1.3rem;
   line-height: 1.4;
+
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  flex-wrap: wrap;
+
+  @include r.down(md) {
+    justify-content: center;
+  }
 }
 
 .heart {
-  margin: 0 0.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 2.2rem;
+  height: 2.2rem;
+
+  border-radius: 999rem;
+  border: v.$border;
+  background: v.$color-pink-soft;
+  color: v.$color-danger;
+
+  margin-inline: 0.2rem;
+
+  svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
 }
 
-.name {
-  font-weight: 600;
-  color: $color-purple;
+.author {
+  font-weight: 900;
+  color: v.$color-text-main;
+  text-decoration: none;
+
+  border-bottom: 0.2rem solid transparent;
+  transition: border-color v.$transition-base, color v.$transition-base;
+
+  &:hover {
+    color: v.$color-purple;
+    border-bottom-color: rgba(180, 147, 255, 0.6);
+  }
+}
+
+.right {
+  color: v.$color-text-muted;
+  font-size: 1.3rem;
+  line-height: 1.4;
 }

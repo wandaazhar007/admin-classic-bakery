@@ -1,21 +1,30 @@
 import styles from "./Footer.module.scss";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHeart } from "@fortawesome/free-solid-svg-icons";
 
-export function Footer() {
-  const year = new Date().getFullYear();
-
+export default function Footer() {
   return (
     <footer className={styles.footer}>
       <div className={styles.inner}>
-        <p className={styles.left}>
-          © {year} Classic Bakery. All rights reserved.
-        </p>
-        <p className={styles.right}>
-          Built with <span className={styles.heart}>❤️</span> by{" "}
-          <span className={styles.name}>Wanda Azhar</span> in Twin Falls, ID, USA
-        </p>
+        <div className={styles.left}>
+          <span>Build with </span>
+          <span className={styles.heart} aria-hidden="true">
+            <FontAwesomeIcon icon={faHeart} />
+          </span>
+          <span> by </span>
+          <a
+            className={styles.author}
+            href="https://wandaazhar.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Wanda Azhar
+          </a>
+          <span> in Twin Falls, ID. USA</span>
+        </div>
+
+        <div className={styles.right}>© 2025 Classic Bakery. All rights reserved.</div>
       </div>
     </footer>
   );
 }
-
-export default Footer;
