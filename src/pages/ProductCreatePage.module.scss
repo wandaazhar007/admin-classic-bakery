@@ -1,0 +1,430 @@
+@use "../../styles/variables" as v;
+@use "../../styles/responsive" as r;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.2rem;
+
+  @include r.down(md) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+
+  height: 4.4rem;
+  padding: 0 1.2rem;
+
+  border-radius: v.$radius-md;
+  border: v.$border;
+  background: v.$color-white;
+
+  font-weight: 900;
+  font-size: 1.3rem;
+
+  transition: background v.$transition-base;
+
+  &:hover {
+    background: v.$color-pink-soft;
+  }
+
+  @include r.down(md) {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.backIcon {
+  display: inline-flex;
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
+
+.titleWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.title {
+  font-size: 2.2rem;
+  font-weight: 900;
+}
+
+.subtitle {
+  font-size: 1.3rem;
+  color: v.$color-text-muted;
+}
+
+.alertError {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+
+  border: 0.1rem solid rgba(255, 107, 107, 0.45);
+  background: rgba(255, 107, 107, 0.12);
+  padding: 1.2rem;
+
+  border-radius: v.$radius-lg;
+
+  font-weight: 800;
+  font-size: 1.3rem;
+}
+
+.alertIcon {
+  color: v.$color-danger;
+
+  svg {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+}
+
+.cardTitle {
+  font-size: 1.6rem;
+  font-weight: 900;
+}
+
+.cardHint {
+  margin-top: 0.4rem;
+  color: v.$color-text-muted;
+  font-size: 1.2rem;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+
+  @include r.down(md) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.fieldFull {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.label {
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+.input {}
+
+.textarea {
+  width: 100%;
+  border-radius: v.$radius-md;
+  border: v.$border;
+  background: v.$color-white;
+  padding: 1.2rem;
+  outline: none;
+
+  min-height: 10rem;
+}
+
+.inputError {
+  border-color: rgba(255, 107, 107, 0.65) !important;
+  box-shadow: 0 0 0 0.3rem rgba(255, 107, 107, 0.12);
+}
+
+.errorText {
+  font-size: 1.2rem;
+  color: v.$color-danger;
+  font-weight: 800;
+}
+
+.muted {
+  color: v.$color-text-muted;
+}
+
+.skelSelect {
+  height: 4.6rem;
+  border-radius: v.$radius-md;
+  border: v.$border;
+  background: linear-gradient(90deg,
+      rgba(240, 230, 255, 0.55),
+      rgba(255, 228, 241, 0.65),
+      rgba(240, 230, 255, 0.55));
+  background-size: 200% 100%;
+  animation: shimmer 1.15s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+.switchUi {
+  width: 4.8rem;
+  height: 2.8rem;
+  border-radius: 999rem;
+  border: v.$border;
+  background: v.$color-pink-soft;
+  position: relative;
+
+  transition: background v.$transition-base;
+
+  &::after {
+    content: "";
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 999rem;
+    background: v.$color-white;
+    border: v.$border;
+    position: absolute;
+    top: 50%;
+    left: 0.3rem;
+    transform: translateY(-50%);
+    transition: left v.$transition-base;
+  }
+}
+
+.switchText {
+  font-weight: 900;
+  color: v.$color-text-main;
+}
+
+.switch input:checked+.switchUi {
+  background: v.$color-purple-soft;
+}
+
+.switch input:checked+.switchUi::after {
+  left: 2.1rem;
+}
+
+.uploadRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+
+  @include r.down(md) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.uploadBtn {
+  position: relative;
+  overflow: hidden;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+
+  height: 4.6rem;
+  padding: 0 1.4rem;
+
+  border-radius: v.$radius-lg;
+  border: 0.1rem solid rgba(255, 193, 220, 0.75);
+  background: v.$color-pink-soft;
+
+  font-weight: 900;
+  font-size: 1.4rem;
+  cursor: pointer;
+
+  transition: background v.$transition-base, transform v.$transition-fast;
+
+  &:hover {
+    background: v.$color-purple-soft;
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  @include r.down(md) {
+    width: 100%;
+  }
+}
+
+.uploadIcon {
+  display: inline-flex;
+
+  svg {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+}
+
+.fileInput {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.uploadMeta {
+  font-size: 1.3rem;
+  color: v.$color-text-main;
+  font-weight: 800;
+
+  @include r.down(md) {
+    text-align: center;
+  }
+}
+
+.previewGrid {
+  margin-top: 1.2rem;
+
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.8rem;
+
+  @include r.down(lg) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @include r.down(md) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @include r.down(sm) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.previewCard {
+  position: relative;
+  border-radius: 1.2rem;
+  border: v.$border;
+  background: v.$color-cream;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+}
+
+.previewImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.previewRemove {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+
+  width: 3.2rem;
+  height: 3.2rem;
+
+  border-radius: 999rem;
+  border: v.$border;
+  background: rgba(255, 255, 255, 0.92);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: transform v.$transition-fast, background v.$transition-base;
+
+  &:hover {
+    background: v.$color-pink-soft;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  svg {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+}
+
+.actions {
+  margin-top: 1.6rem;
+  display: flex;
+  justify-content: flex-end;
+
+  @include r.down(md) {
+    justify-content: stretch;
+  }
+}
+
+.submitBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+
+  height: 4.8rem;
+  padding: 0 1.6rem;
+
+  border-radius: v.$radius-lg;
+  border: 0.1rem solid rgba(180, 147, 255, 0.55);
+  background: v.$color-purple-soft;
+
+  font-weight: 900;
+  font-size: 1.4rem;
+
+  transition: background v.$transition-base, transform v.$transition-fast;
+
+  &:hover {
+    background: v.$color-pink-soft;
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  @include r.down(md) {
+    width: 100%;
+  }
+}
+
+.submitIcon {
+  display: inline-flex;
+
+  svg {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+}

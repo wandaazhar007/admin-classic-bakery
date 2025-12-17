@@ -1,29 +1,3 @@
-// // src/utils/uploadImages.ts
-// import { storage } from "../lib/firebase";
-// import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-// export async function uploadProductImages(
-//   productId: string,
-//   files: File[]
-// ): Promise<{ url: string; isPrimary: boolean }[]> {
-//   const uploaded: { url: string; isPrimary: boolean }[] = [];
-
-//   for (let i = 0; i < files.length; i++) {
-//     const file = files[i];
-//     const path = `products/${productId}/${Date.now()}-${file.name}`;
-//     const storageRef = ref(storage, path);
-//     await uploadBytes(storageRef, file);
-//     const url = await getDownloadURL(storageRef);
-
-//     uploaded.push({
-//       url,
-//       isPrimary: i === 0, // first image as primary
-//     });
-//   }
-
-//   return uploaded;
-// }
-
 // src/utils/uploadImages.ts
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../lib/firebase";

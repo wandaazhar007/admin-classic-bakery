@@ -3,6 +3,9 @@ import Navbar from "./components/navbar/Navbar";
 import Sidebar from "./components/sidebar/Sidebar";
 import Footer from "./components/footer/Footer";
 
+import ProductsPage from "./pages/ProductsPage";
+import ProductCreatePage from "./pages/ProductCreatePage";
+
 type PageInfo = {
   title: string;
   path: string;
@@ -22,8 +25,13 @@ export default function App() {
     []
   );
 
+  const navigate = (to: string) => {
+    window.history.pushState({}, "", to);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  };
+
   useEffect(() => {
-    const readPath = () => setPath(window.location.pathname || "/");
+    const readPath = () => setPath(window.location.pathname || "/dashboard");
     readPath();
 
     const onPopState = () => readPath();
@@ -44,13 +52,102 @@ export default function App() {
     pages.find((p) => path === p.path || path.startsWith(`${p.path}/`))?.title ??
     "Welcome";
 
+  const renderContent = () => {
+    if (path === "/produk") return <ProductsPage onNavigate={navigate} />;
+    if (path === "/produk/tambah") return <ProductCreatePage onNavigate={navigate} />;
+
+    // minimal placeholders for now
+    if (path === "/dashboard") {
+      return (
+        <div className="card">
+          <div className="cardHeader">
+            <div style={{ fontSize: "1.8rem", fontWeight: 900 }}>Dashboard</div>
+            <div className="muted" style={{ marginTop: "0.4rem" }}>
+              Path: {path}
+            </div>
+          </div>
+          <div className="cardBody">
+            <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>
+              Dashboard placeholder ✅
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (path === "/kategori") {
+      return (
+        <div className="card">
+          <div className="cardHeader">
+            <div style={{ fontSize: "1.8rem", fontWeight: 900 }}>Kategori</div>
+            <div className="muted" style={{ marginTop: "0.4rem" }}>
+              Path: {path}
+            </div>
+          </div>
+          <div className="cardBody">
+            <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>
+              Kategori placeholder ✅
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (path === "/user") {
+      return (
+        <div className="card">
+          <div className="cardHeader">
+            <div style={{ fontSize: "1.8rem", fontWeight: 900 }}>Pengguna</div>
+            <div className="muted" style={{ marginTop: "0.4rem" }}>
+              Path: {path}
+            </div>
+          </div>
+          <div className="cardBody">
+            <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>
+              Pengguna placeholder ✅
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // default route
+    return (
+      <div className="card">
+        <div className="cardHeader">
+          <div style={{ fontSize: "1.8rem", fontWeight: 900 }}>{currentTitle}</div>
+          <div className="muted" style={{ marginTop: "0.4rem" }}>
+            Path tidak dikenali: {path}
+          </div>
+        </div>
+        <div className="cardBody">
+          <button
+            type="button"
+            style={{
+              height: "4.4rem",
+              padding: "0 1.4rem",
+              borderRadius: "1.2rem",
+              border: "0.1rem solid rgba(180,147,255,0.55)",
+              background: "rgba(226,214,255,0.9)",
+              fontWeight: 900,
+              cursor: "pointer",
+            }}
+            onClick={() => navigate("/dashboard")}
+          >
+            Kembali ke Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar
         onToggleSidebar={() => setIsSidebarOpen(true)}
         userLabel="Admin"
         onLogoutClick={() => {
-          // placeholder: connect to AuthContext later
+          // wire to AuthContext later (you already have it)
           // eslint-disable-next-line no-alert
           alert("Logout clicked (wire to AuthContext later).");
         }}
@@ -65,7 +162,6 @@ export default function App() {
       />
 
       <div style={{ flex: 1 }}>
-        {/* Container aligns sidebar left edge with navbar inner container */}
         <div className="container">
           <div
             style={{
@@ -76,34 +172,9 @@ export default function App() {
               paddingBottom: "1.6rem",
             }}
           >
-            <Sidebar
-              isOpen={isSidebarOpen}
-              onClose={() => setIsSidebarOpen(false)}
-            />
+            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-            <main style={{ flex: 1, minWidth: 0 }}>
-              <div className="card">
-                <div className="cardHeader">
-                  <div style={{ fontSize: "1.8rem", fontWeight: 900 }}>
-                    {currentTitle}
-                  </div>
-                  <div className="muted" style={{ marginTop: "0.4rem" }}>
-                    Current path: {path || "/"}
-                  </div>
-                </div>
-
-                <div className="cardBody">
-                  <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>
-                    Layout sudah aktif ✅
-                  </div>
-                  <p className="muted" style={{ marginTop: "0.8rem" }}>
-                    Navbar + Sidebar + Footer sudah muncul. Di mobile, klik hamburger
-                    untuk membuka sidebar, klik overlay / tombol X / Escape untuk
-                    menutup.
-                  </p>
-                </div>
-              </div>
-            </main>
+            <main style={{ flex: 1, minWidth: 0 }}>{renderContent()}</main>
           </div>
         </div>
       </div>
