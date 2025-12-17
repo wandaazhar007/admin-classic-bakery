@@ -1,59 +1,57 @@
 @use "./variables" as v;
 
-// Media query helpers (mobile-first)
-@mixin up($bp) {
-  @media (min-width: $bp) {
+// Breakpoints (mobile-first). With html { font-size: 62.5% }, 1rem = 10px.
+$breakpoints: (
+  xs: 36rem,
+  // 360px
+  sm: 48rem,
+  // 480px
+  md: 76.8rem,
+  // 768px
+  lg: 102.4rem,
+  // 1024px
+  xl: 128rem // 1280px
+);
+
+@function bp($key) {
+  @return map-get($breakpoints, $key);
+}
+
+// Min-width (mobile-first)
+@mixin up($key) {
+  @media (min-width: bp($key)) {
     @content;
   }
 }
 
-@mixin down($bp) {
+// Max-width (useful for targeted mobile fixes)
+@mixin down($key) {
 
-  // small epsilon so "down(md)" doesn't overlap with "up(md)"
-  @media (max-width: calc(#{$bp} - 0.02rem)) {
+  // subtract a tiny fraction to avoid overlap between ranges
+  @media (max-width: calc(bp($key) - 0.01rem)) {
     @content;
   }
 }
 
-@mixin between($min, $max) {
-  @media (min-width: $min) and (max-width: calc(#{$max} - 0.02rem)) {
+// Between two breakpoints
+@mixin between($from, $to) {
+  @media (min-width: bp($from)) and (max-width: calc(bp($to) - 0.01rem)) {
     @content;
   }
 }
 
-// Common shortcuts
-@mixin sm-up {
-  @include up(v.$bp-sm) {
-    @content;
-  }
-}
+// Simple fluid container helper
+@mixin container {
+  width: 100%;
+  max-width: v.$container-max;
+  margin-inline: auto;
+  padding-inline: v.$container-pad;
 
-@mixin md-up {
-  @include up(v.$bp-md) {
-    @content;
+  @include up(md) {
+    padding-inline: 2.4rem;
   }
-}
 
-@mixin lg-up {
-  @include up(v.$bp-lg) {
-    @content;
-  }
-}
-
-@mixin xl-up {
-  @include up(v.$bp-xl) {
-    @content;
-  }
-}
-
-@mixin md-down {
-  @include down(v.$bp-md) {
-    @content;
-  }
-}
-
-@mixin lg-down {
-  @include down(v.$bp-lg) {
-    @content;
+  @include up(lg) {
+    padding-inline: 3.2rem;
   }
 }

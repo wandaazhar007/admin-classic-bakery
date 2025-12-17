@@ -1,21 +1,17 @@
-// src/components/sidebar/Sidebar.tsx
-import { NavLink } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import styles from "./Sidebar.module.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faGaugeHigh,
-  faCakeCandles,
+  faGauge,
+  faBoxOpen,
   faTags,
-  faReceipt,
   faUsers,
-  faUserGear,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
-import styles from "./Sidebar.module.scss";
-
 type SidebarProps = {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen: boolean; // mobile open/close state
+  onClose?: () => void;
 };
 
 type MenuItem = {
@@ -24,53 +20,115 @@ type MenuItem = {
   icon: any;
 };
 
-const MENU_ITEMS: MenuItem[] = [
-  { label: "Dashboard", to: "/dashboard", icon: faGaugeHigh },
-  { label: "Products", to: "/products", icon: faCakeCandles },
-  { label: "Categories", to: "/category", icon: faTags },
-  { label: "Orders", to: "/orders", icon: faReceipt },
-  { label: "Customers", to: "/customer", icon: faUsers },
-  { label: "Users", to: "/users", icon: faUserGear },
-];
-
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  // Close sidebar when ESC is pressed
+  const menuItems: MenuItem[] = useMemo(
+    () => [
+      { label: "Dashboard", to: "/dashboard", icon: faGauge },
+      { label: "Produk", to: "/produk", icon: faBoxOpen },
+      { label: "Kategori", to: "/kategori", icon: faTags },
+      { label: "Pengguna", to: "/user", icon: faUsers },
+    ],
+    []
+  );
+
+  const [currentPath, setCurrentPath] = useState<string>("");
+
+  const closeBtnRef = useRef<HTMLButtonElement | null>(null);
+
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+    const readPath = () => setCurrentPath(window.location.pathname || "");
+    readPath();
+
+    const onPopState = () => readPath();
+    window.addEventListener("popstate", onPopState);
+
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!isOpen) return;
+      if (e.key === "Escape") onClose?.();
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (isOpen) {
+      // small accessibility improvement on mobile
+      closeBtnRef.current?.focus();
+    }
+  }, [isOpen]);
+
+  const isActive = (to: string) => {
+    if (!currentPath) return false;
+    return currentPath === to || currentPath.startsWith(`${to}/`);
+  };
+
+  const handleLinkClick = () => {
+    // close sidebar after clicking a link on mobile
+    onClose?.();
+  };
 
   return (
-    <>
-      {/* Backdrop (mobile only) */}
-      <div
-        className={`${styles.backdrop} ${isOpen ? styles.backdropVisible : ""}`}
+    <aside className={styles.sidebar} aria-label="Sidebar navigation">
+      <button
+        type="button"
+        className={`${styles.overlay} ${isOpen ? styles.overlayOpen : ""}`}
         onClick={onClose}
+        aria-label="Close sidebar"
       />
 
-      <aside
-        className={`${styles.sidebar} ${isOpen ? styles.open : ""}`}
-        aria-label="Admin menu"
-      >
-        <nav className={styles.nav}>
-          {MENU_ITEMS.map((item) => (
-            <NavLink
+      <div className={`${styles.panel} ${isOpen ? styles.panelOpen : ""}`}>
+        <div className={styles.header}>
+          <div className={styles.brand}>
+            <img
+              className={styles.logo}
+              src="/images/logo-classic-bakery-cake.png"
+              alt="Classic Bakery logo"
+              loading="eager"
+            />
+            <div className={styles.brandText}>
+              <div className={styles.brandTitle}>CLASSIC BAKERY</div>
+              <div className={styles.brandSub}>Admin Panel</div>
+            </div>
+          </div>
+
+          <button
+            ref={closeBtnRef}
+            type="button"
+            className={styles.closeButton}
+            onClick={onClose}
+            aria-label="Close sidebar"
+            title="Close"
+          >
+            <FontAwesomeIcon icon={faXmark} />
+          </button>
+        </div>
+
+        <nav className={styles.nav} aria-label="Main menu">
+          {menuItems.map((item) => (
+            <a
               key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `${styles.navItem} ${isActive ? styles.active : ""}`
-              }
-              onClick={onClose}
+              href={item.to}
+              className={`${styles.link} ${isActive(item.to) ? styles.active : ""}`}
+              onClick={handleLinkClick}
             >
-              <FontAwesomeIcon icon={item.icon} className={styles.icon} />
+              <span className={styles.iconWrap} aria-hidden="true">
+                <FontAwesomeIcon icon={item.icon} />
+              </span>
               <span className={styles.label}>{item.label}</span>
-            </NavLink>
+            </a>
           ))}
         </nav>
-      </aside>
-    </>
+
+        <div className={styles.footerNote}>
+          <span className={styles.dot} aria-hidden="true" />
+          <span className={styles.noteText}>Fast & clean admin experience</span>
+        </div>
+      </div>
+    </aside>
   );
 }

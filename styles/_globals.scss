@@ -1,9 +1,12 @@
 @use "./variables" as v;
 @use "./responsive" as r;
 
-/* ────────────────────────────────────────────────
-   Base / Reset
-   ──────────────────────────────────────────────── */
+html {
+  font-size: v.$font-size-root; // 1rem = 10px
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
 
 *,
 *::before,
@@ -11,25 +14,24 @@
   box-sizing: border-box;
 }
 
-html {
-  font-size: 100%; // keep REM predictable (1rem = browser default)
-}
-
 body {
   margin: 0;
-  font-family: v.$font-sans-rounded;
-  font-size: v.$fs-md;
-  line-height: v.$lh-normal;
+  min-height: 100vh;
+
+  font-family: v.$font-sans;
+  font-size: v.$font-size-base;
+  line-height: v.$line-height-base;
+
   color: v.$color-text-main;
   background: v.$color-cream;
 }
 
 img,
 svg,
-video {
-  max-width: 100%;
-  height: auto;
+video,
+canvas {
   display: block;
+  max-width: 100%;
 }
 
 a {
@@ -45,175 +47,74 @@ select {
   color: inherit;
 }
 
-:focus-visible {
-  outline: none;
-  box-shadow: v.$focus-ring;
-  border-radius: v.$radius-sm;
+button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
-/* ────────────────────────────────────────────────
-   App layout helpers (optional utility classes)
-   ──────────────────────────────────────────────── */
-
-.container {
+input,
+textarea,
+select {
   width: 100%;
-  max-width: v.$container-max;
-  margin-inline: auto;
-  padding-inline: v.$space-4;
-
-  @include r.md-up {
-    padding-inline: v.$space-6;
-  }
-}
-
-.page {
-  padding: v.$space-4;
-
-  @include r.md-up {
-    padding: v.$space-6;
-  }
-}
-
-.card {
-  background: v.$color-white;
-  border: v.$border-1 solid v.$color-border-soft;
-  border-radius: v.$radius-lg;
-  box-shadow: v.$shadow-sm;
-  padding: v.$space-4;
-
-  @include r.md-up {
-    padding: v.$space-6;
-  }
-}
-
-/* ────────────────────────────────────────────────
-   Form elements (clean + rounded)
-   ──────────────────────────────────────────────── */
-
-.input,
-select,
-textarea {
-  width: 100%;
-  border: v.$border-1 solid v.$color-border-soft;
   border-radius: v.$radius-md;
-  padding: v.$space-3 v.$space-4;
+  border: v.$border;
   background: v.$color-white;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
-
-  &:focus {
-    border-color: v.$color-purple;
-    box-shadow: v.$focus-ring;
-    outline: none;
-  }
+  padding: 1.2rem 1.2rem;
+  outline: none;
+  transition: border-color v.$transition-base, box-shadow v.$transition-base;
 
   &::placeholder {
     color: v.$color-text-muted;
   }
-}
 
-label {
-  display: inline-block;
-  font-size: v.$fs-sm;
-  color: v.$color-text-muted;
-  margin-bottom: v.$space-2;
-}
-
-/* ────────────────────────────────────────────────
-   Buttons
-   ──────────────────────────────────────────────── */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: v.$space-2;
-  border: none;
-  border-radius: v.$radius-pill;
-  padding: v.$space-3 v.$space-5;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: v.$fs-sm;
-  line-height: 1;
-  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
-
-  &:active {
-    transform: translateY(0.0625rem);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  &:focus {
+    border-color: v.$color-purple;
+    box-shadow: 0 0 0 0.3rem rgba(180, 147, 255, 0.28);
   }
 }
 
-.btnPrimary {
-  background: v.$color-purple;
-  color: v.$color-white;
-  box-shadow: v.$shadow-sm;
-
-  &:hover {
-    filter: brightness(0.98);
-    box-shadow: v.$shadow-md;
-  }
+textarea {
+  resize: vertical;
+  min-height: 10rem;
 }
 
-.btnSoft {
-  background: v.$color-purple-soft;
-  color: v.$color-text-main;
-
-  &:hover {
-    filter: brightness(0.98);
-  }
+:focus-visible {
+  outline: 0.3rem solid rgba(180, 147, 255, 0.45);
+  outline-offset: 0.2rem;
 }
 
-.btnDanger {
-  background: v.$color-danger;
-  color: v.$color-white;
-
-  &:hover {
-    filter: brightness(0.98);
-  }
+hr {
+  border: 0;
+  border-top: v.$border;
+  margin: 2.4rem 0;
 }
 
-/* ────────────────────────────────────────────────
-   Tables (mobile friendly)
-   ──────────────────────────────────────────────── */
+/* Global layout helpers */
+.container {
+  @include r.container;
+}
 
-.tableWrap {
-  width: 100%;
-  overflow-x: auto;
-  border-radius: v.$radius-lg;
-  border: v.$border-1 solid v.$color-border-soft;
+.card {
   background: v.$color-white;
+  border: v.$border;
+  border-radius: v.$radius-lg;
+  box-shadow: v.$shadow-sm;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 40rem; // allows horizontal scroll on mobile
+.cardHeader {
+  padding: 1.6rem;
+  border-bottom: v.$border;
 }
 
-th,
-td {
-  text-align: left;
-  padding: v.$space-3 v.$space-4;
-  border-bottom: v.$border-1 solid v.$color-border-soft;
-  font-size: v.$fs-sm;
+.cardBody {
+  padding: 1.6rem;
 }
 
-th {
-  font-weight: 800;
-  color: v.$color-text-main;
-  background: v.$color-pink-soft;
+.cardFooter {
+  padding: 1.6rem;
+  border-top: v.$border;
 }
-
-tbody tr:hover {
-  background: v.$color-cream;
-}
-
-/* ────────────────────────────────────────────────
-   Small utilities
-   ──────────────────────────────────────────────── */
 
 .muted {
   color: v.$color-text-muted;
@@ -222,37 +123,38 @@ tbody tr:hover {
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: v.$space-2;
-  padding: v.$space-1 v.$space-3;
-  border-radius: v.$radius-pill;
-  font-size: v.$fs-xs;
-  font-weight: 800;
-  border: v.$border-1 solid v.$color-border-soft;
-  background: v.$color-white;
+  gap: 0.6rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999rem;
+  border: v.$border;
+  background: v.$color-purple-soft;
+  color: v.$color-text-main;
+  font-size: 1.2rem;
+  line-height: 1.2;
 }
 
 .badgeSuccess {
+  background: rgba(59, 178, 115, 0.14);
   border-color: rgba(59, 178, 115, 0.35);
-  background: rgba(59, 178, 115, 0.12);
 }
 
 .badgeDanger {
+  background: rgba(255, 107, 107, 0.14);
   border-color: rgba(255, 107, 107, 0.35);
-  background: rgba(255, 107, 107, 0.12);
 }
 
-/* ────────────────────────────────────────────────
-   Responsive tweaks
-   ──────────────────────────────────────────────── */
+/* Mobile-first spacing defaults */
+main {
+  width: 100%;
+  padding: 1.6rem 0;
 
-.hideOnMobile {
-  @include r.lg-down {
-    display: none !important;
+  @include r.up(md) {
+    padding: 2.4rem 0;
   }
 }
 
-.hideOnDesktop {
-  @include r.lg-up {
-    display: none !important;
-  }
+/* Prevent layout overflow on small screens */
+#root {
+  min-height: 100vh;
+  overflow-x: hidden;
 }
