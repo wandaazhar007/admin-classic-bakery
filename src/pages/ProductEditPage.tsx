@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import styles from "./ProductCreatePage.module.scss";
+import styles from "./ProductEditPage.module.scss";
 import api from "../lib/apiClient";
 import { uploadProductImages, type UploadedImage } from "../utils/uploadImages";
 import { Editor } from "@tinymce/tinymce-react";
@@ -10,6 +10,7 @@ import {
   faFloppyDisk,
   faImage,
   faTrash,
+  faTriangleExclamation,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -27,9 +28,24 @@ type CategoriesResponse = {
 
 type ProductImage = { url: string; isPrimary: boolean };
 
-type ProductCreateResponseAny = any;
+type Product = {
+  id: string;
+  name: string;
+  shortDescription?: string;
+  description?: string;
+  category?: string;
+  price: number;
+  images?: ProductImage[];
+  isActive?: boolean;
+};
 
-type ProductCreatePageProps = {
+type ProductResponse = {
+  success: boolean;
+  data: Product;
+};
+
+type ProductEditPageProps = {
+  productId: string;
   onNavigate: (to: string) => void;
   notify: (message: string, type?: "success" | "error") => void;
 };
@@ -37,7 +53,7 @@ type ProductCreatePageProps = {
 type FormValues = {
   name: string;
   shortDescription: string;
-  description: string;
+  description: string; // HTML
   category: string;
   price: string;
   isActive: boolean;
@@ -57,6 +73,7 @@ function normalizeImages(imgs: ProductImage[]) {
   const hasPrimary = imgs.some((i) => i.isPrimary);
   if (!hasPrimary) return imgs.map((i, idx) => ({ ...i, isPrimary: idx === 0 }));
 
+  // kalau ada beberapa primary, biarkan pertama tetap primary
   let firstPrimaryFound = false;
   return imgs.map((i) => {
     if (!i.isPrimary) return i;
@@ -68,26 +85,14 @@ function normalizeImages(imgs: ProductImage[]) {
   });
 }
 
-// try best-effort to extract created id from backend response
-function extractCreatedId(resData: any): string | null {
-  const candidates = [
-    resData?.data?.id,
-    resData?.data?._id,
-    resData?.data?.data?.id,
-    resData?.data?.data?._id,
-    resData?.id,
-    resData?._id,
-  ];
-  for (const c of candidates) {
-    if (typeof c === "string" && c.trim()) return c;
-  }
-  return null;
-}
-
-export default function ProductCreatePage({
+export default function ProductEditPage({
+  productId,
   onNavigate,
   notify,
-}: ProductCreatePageProps) {
+}: ProductEditPageProps) {
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
   const [catsLoading, setCatsLoading] = useState(true);
   const [catsError, setCatsError] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
@@ -104,8 +109,12 @@ export default function ProductCreatePage({
   const [errors, setErrors] = useState<FormErrors>({});
   const [saving, setSaving] = useState(false);
 
+  const [existingImages, setExistingImages] = useState<ProductImage[]>([]);
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [newPreviews, setNewPreviews] = useState<string[]>([]);
+
+  const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
+  const [removeIndex, setRemoveIndex] = useState<number | null>(null);
 
   const categoryOptions = useMemo(() => {
     return categories.map((c) => ({
@@ -113,6 +122,37 @@ export default function ProductCreatePage({
       value: c.slug || c.id || c.name,
     }));
   }, [categories]);
+
+  useEffect(() => {
+    const run = async () => {
+      setLoading(true);
+      setLoadError("");
+
+      try {
+        const prodRes = await api.get<ProductResponse>(`/products/${productId}`);
+        const p = prodRes.data.data;
+
+        setValues({
+          name: p.name || "",
+          shortDescription: p.shortDescription || "",
+          description: p.description || "",
+          category: p.category || "",
+          price: String(p.price ?? ""),
+          isActive: p.isActive !== false,
+        });
+
+        setExistingImages(Array.isArray(p.images) ? p.images : []);
+      } catch (e: any) {
+        const msg =
+          e?.response?.data?.message || e?.message || "Gagal memuat data produk.";
+        setLoadError(String(msg));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    run();
+  }, [productId]);
 
   useEffect(() => {
     const run = async () => {
@@ -179,6 +219,23 @@ export default function ProductCreatePage({
     setNewFiles((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  const openRemoveExisting = (idx: number) => {
+    setRemoveIndex(idx);
+    setConfirmRemoveOpen(true);
+  };
+
+  const closeRemoveExisting = () => {
+    if (saving) return;
+    setConfirmRemoveOpen(false);
+    setRemoveIndex(null);
+  };
+
+  const confirmRemoveExisting = () => {
+    if (removeIndex === null) return;
+    setExistingImages((prev) => prev.filter((_, i) => i !== removeIndex));
+    closeRemoveExisting();
+  };
+
   const save = async () => {
     if (!validate()) {
       notify("produk gagal disimpan", "error");
@@ -190,27 +247,25 @@ export default function ProductCreatePage({
     try {
       const priceNum = toNumberSafe(values.price);
 
-      // 1) create product first (without images) to get productId
-      const createRes = await api.post<ProductCreateResponseAny>("/products", {
+      let uploaded: UploadedImage[] = [];
+      if (newFiles.length) {
+        uploaded = await uploadProductImages(productId, newFiles);
+      }
+
+      const merged = normalizeImages([
+        ...(existingImages || []),
+        ...(uploaded || []),
+      ]);
+
+      await api.put(`/products/${productId}`, {
         name: values.name.trim(),
         shortDescription: values.shortDescription.trim(),
         description: values.description || "",
         category: values.category,
         price: priceNum,
         isActive: values.isActive,
+        images: merged,
       });
-
-      const createdId = extractCreatedId(createRes?.data);
-
-      // 2) upload images if any, then update product images
-      if (createdId && newFiles.length) {
-        const uploaded: UploadedImage[] = await uploadProductImages(createdId, newFiles);
-        const merged = normalizeImages([...(uploaded || [])]);
-
-        await api.put(`/products/${createdId}`, {
-          images: merged,
-        });
-      }
 
       notify("produk berhasil disimpan", "success");
       onNavigate("/produk");
@@ -220,6 +275,35 @@ export default function ProductCreatePage({
       setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className={styles.loadingWrap}>
+        <div className={styles.loadingCard}>Loading produk...</div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.alertError} role="alert">
+          <span className={styles.alertIcon} aria-hidden="true">
+            <FontAwesomeIcon icon={faTriangleExclamation} />
+          </span>
+          <span>{loadError}</span>
+        </div>
+
+        <button
+          type="button"
+          className={styles.backBtn}
+          onClick={() => onNavigate("/produk")}
+        >
+          <FontAwesomeIcon icon={faArrowLeft} /> Kembali
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.page}>
@@ -236,15 +320,17 @@ export default function ProductCreatePage({
         </button>
 
         <div className={styles.titleWrap}>
-          <div className={styles.title}>Tambah Produk</div>
-          <div className={styles.subtitle}>Buat produk baru + upload foto.</div>
+          <div className={styles.title}>Edit Produk</div>
+          <div className={styles.subtitle}>Update data produk dan gambar.</div>
         </div>
       </div>
 
       <div className="card">
         <div className="cardHeader">
-          <div className={styles.cardTitle}>Form Tambah</div>
-          <div className={styles.cardHint}>Deskripsi memakai TinyMCE.</div>
+          <div className={styles.cardTitle}>Form Edit</div>
+          <div className={styles.cardHint}>
+            Foto existing bisa dihapus dan kamu bisa tambah foto baru.
+          </div>
         </div>
 
         <div className="cardBody">
@@ -343,7 +429,33 @@ export default function ProductCreatePage({
             </div>
 
             <div className={styles.fieldFull}>
-              <label className={styles.label}>Upload Foto (multiple)</label>
+              <label className={styles.label}>Foto Existing</label>
+
+              {existingImages.length ? (
+                <div className={styles.previewGrid}>
+                  {existingImages.map((img, idx) => (
+                    <div key={`${img.url}-${idx}`} className={styles.previewCard}>
+                      <img src={img.url} alt={`Existing ${idx + 1}`} className={styles.previewImg} />
+                      <button
+                        type="button"
+                        className={styles.previewRemove}
+                        onClick={() => openRemoveExisting(idx)}
+                        aria-label="Remove existing image"
+                        title="Remove"
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                      {img.isPrimary ? <div className={styles.primaryBadge}>Primary</div> : null}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.muted}>Tidak ada foto existing.</div>
+              )}
+            </div>
+
+            <div className={styles.fieldFull}>
+              <label className={styles.label}>Tambah Foto Baru (multiple)</label>
 
               <div className={styles.uploadRow}>
                 <label className={styles.uploadBtn}>
@@ -362,9 +474,9 @@ export default function ProductCreatePage({
 
                 <div className={styles.uploadMeta}>
                   {newFiles.length ? (
-                    <span>{newFiles.length} file dipilih</span>
+                    <span>{newFiles.length} file baru dipilih</span>
                   ) : (
-                    <span className={styles.muted}>Belum ada foto</span>
+                    <span className={styles.muted}>Belum ada foto baru</span>
                   )}
                 </div>
               </div>
@@ -381,9 +493,9 @@ export default function ProductCreatePage({
                         aria-label="Remove new image"
                         title="Remove"
                       >
-                        <FontAwesomeIcon icon={idx === 0 ? faTrash : faXmark} />
+                        <FontAwesomeIcon icon={faXmark} />
                       </button>
-                      <div className={styles.newBadge}>{idx === 0 ? "Primary" : "New"}</div>
+                      <div className={styles.newBadge}>New</div>
                     </div>
                   ))}
                 </div>
@@ -406,6 +518,37 @@ export default function ProductCreatePage({
           </div>
         </div>
       </div>
+
+      {confirmRemoveOpen ? (
+        <div className={styles.modalOverlay} role="dialog" aria-modal="true">
+          <div className={styles.modal}>
+            <div className={styles.modalTitle}>Hapus foto?</div>
+            <div className={styles.modalText}>
+              Foto akan dihapus dari produk saat kamu menekan tombol Simpan.
+            </div>
+
+            <div className={styles.modalActions}>
+              <button type="button" className={styles.modalBtn} onClick={closeRemoveExisting}>
+                Batal
+              </button>
+              <button
+                type="button"
+                className={`${styles.modalBtn} ${styles.modalBtnDanger}`}
+                onClick={confirmRemoveExisting}
+              >
+                Hapus
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className={styles.modalBackdropBtn}
+            aria-label="Close"
+            onClick={closeRemoveExisting}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

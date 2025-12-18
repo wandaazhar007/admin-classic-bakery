@@ -160,7 +160,7 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 74rem;
+  min-width: 70rem;
 
   th {
     text-align: left;
@@ -183,33 +183,12 @@
   }
 }
 
-.thPhoto {
-  width: 8rem;
-}
-
-.thPrice {
-  width: 14rem;
+.thDate {
+  width: 20rem;
 }
 
 .thAction {
   width: 12rem;
-}
-
-.thumb {
-  width: 5.6rem;
-  height: 5.6rem;
-  border-radius: 1.2rem;
-  border: v.$border;
-  object-fit: cover;
-  background: v.$color-cream;
-}
-
-.thumbPlaceholder {
-  width: 5.6rem;
-  height: 5.6rem;
-  border-radius: 1.2rem;
-  border: v.$border;
-  background: v.$color-cream;
 }
 
 .name {
@@ -221,21 +200,17 @@
   margin-top: 0.3rem;
   color: v.$color-text-muted;
   font-size: 1.2rem;
-  max-width: 42rem;
+  max-width: 46rem;
 }
 
-.categoryPill {
-  display: inline-flex;
-  padding: 0.5rem 0.9rem;
-  border-radius: 999rem;
-  border: v.$border;
-  background: v.$color-pink-soft;
-  font-weight: 900;
+.subMuted {
+  margin-top: 0.3rem;
+  color: v.$color-text-muted;
   font-size: 1.2rem;
-  white-space: nowrap;
+  opacity: 0.7;
 }
 
-.price {
+.dateCell {
   font-weight: 900;
   white-space: nowrap;
 }
@@ -362,11 +337,6 @@
   }
 }
 
-.skelThumb {
-  width: 5.6rem;
-  height: 5.6rem;
-}
-
 .skelLine {
   width: 18rem;
   height: 1.2rem;
@@ -376,12 +346,6 @@
   width: 12rem;
   height: 1.1rem;
   margin-top: 0.8rem;
-}
-
-.skelPill {
-  width: 10rem;
-  height: 1.8rem;
-  border-radius: 999rem;
 }
 
 .skelActions {
@@ -395,7 +359,7 @@
   border-radius: v.$radius-md;
 }
 
-/* modal */
+/* modal shared */
 .modalOverlay {
   position: fixed;
   inset: 0;
@@ -431,9 +395,88 @@
   padding: 1.6rem;
 }
 
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .modalTitle {
   font-size: 1.8rem;
   font-weight: 900;
+}
+
+.modalClose {
+  width: 4rem;
+  height: 4rem;
+  border-radius: v.$radius-md;
+  border: v.$border;
+  background: v.$color-white;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: background v.$transition-base;
+
+  &:hover {
+    background: v.$color-pink-soft;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+}
+
+.modalBody {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.label {
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+.textarea {
+  width: 100%;
+  border: v.$border;
+  border-radius: v.$radius-md;
+  padding: 1.2rem 1.2rem;
+  font-size: 1.4rem;
+  color: v.$color-text-main;
+  background: v.$color-white;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.3rem rgba(180, 147, 255, 0.2);
+  }
+}
+
+.inputError {
+  border-color: rgba(255, 107, 107, 0.65) !important;
+  box-shadow: 0 0 0 0.3rem rgba(255, 107, 107, 0.12);
+}
+
+.errorText {
+  font-size: 1.2rem;
+  color: v.$color-danger;
+  font-weight: 800;
 }
 
 .modalText {
@@ -449,7 +492,7 @@
 }
 
 .modalActions {
-  margin-top: 1.6rem;
+  margin-top: 0.6rem;
   display: flex;
   gap: 0.8rem;
   justify-content: flex-end;
@@ -470,6 +513,34 @@
 
   font-weight: 900;
   font-size: 1.4rem;
+
+  transition: background v.$transition-base;
+
+  &:hover {
+    background: v.$color-pink-soft;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+.modalBtnPrimary {
+  height: 4.4rem;
+  padding: 0 1.2rem;
+
+  border-radius: v.$radius-md;
+  border: 0.1rem solid rgba(180, 147, 255, 0.55);
+  background: v.$color-purple-soft;
+
+  font-weight: 900;
+  font-size: 1.4rem;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
 
   transition: background v.$transition-base;
 

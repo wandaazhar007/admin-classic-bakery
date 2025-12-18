@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./ProductsPage.module.scss";
 import api from "../lib/apiClient";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -20,8 +20,6 @@ type Product = {
   price: number;
   images?: ProductImage[];
   isActive?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
 };
 
 type ProductsResponse = {
@@ -32,6 +30,7 @@ type ProductsResponse = {
 
 type ProductsPageProps = {
   onNavigate: (to: string) => void;
+  notify: (message: string, type?: "success" | "error") => void;
 };
 
 function sleep(ms: number) {
@@ -39,12 +38,8 @@ function sleep(ms: number) {
 }
 
 function formatIDRLike(price: number) {
-  // Admin panel: keep it simple and consistent
-  // (project context doesn’t specify currency formatting rules)
   const safe = Number.isFinite(price) ? price : 0;
-  return new Intl.NumberFormat("id-ID", {
-    maximumFractionDigits: 0,
-  }).format(safe);
+  return new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(safe);
 }
 
 function getThumbnailUrl(p: Product) {
@@ -53,7 +48,7 @@ function getThumbnailUrl(p: Product) {
   return primary || imgs[0]?.url || "";
 }
 
-export default function ProductsPage({ onNavigate }: ProductsPageProps) {
+export default function ProductsPage({ onNavigate, notify }: ProductsPageProps) {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -77,84 +72,73 @@ export default function ProductsPage({ onNavigate }: ProductsPageProps) {
   const pageSize = 5;
   const minSkeletonMs = 900;
 
-  const maxVisiblePage = useMemo(() => {
-    // we don’t have total count from backend, so only show pages we can reach
-    // show current, and show next page number only if nextCursor exists
-    const existingPages = Object.keys(cursorByPage)
-      .map((k) => Number(k))
-      .filter((n) => Number.isFinite(n));
-    const maxLoaded = existingPages.length ? Math.max(...existingPages) : 1;
-    return Math.max(maxLoaded, page) + (nextCursor ? 1 : 0);
-  }, [cursorByPage, page, nextCursor]);
-
   useEffect(() => {
     const t = window.setTimeout(() => setDebouncedSearch(search.trim()), 350);
     return () => window.clearTimeout(t);
   }, [search]);
 
   useEffect(() => {
-    // reset paging when search changes
     setPage(1);
     setCursorByPage({ 1: null });
   }, [debouncedSearch]);
 
-  useEffect(() => {
-    const run = async () => {
-      setError("");
-      setLoading(true);
+  const fetchProducts = async (targetPage: number) => {
+    setError("");
+    setLoading(true);
 
-      const started = Date.now();
+    const started = Date.now();
 
-      try {
-        abortRef.current?.abort();
-        const ac = new AbortController();
-        abortRef.current = ac;
+    try {
+      abortRef.current?.abort();
+      const ac = new AbortController();
+      abortRef.current = ac;
 
-        const cursor = cursorByPage[page] ?? null;
+      const cursor = cursorByPage[targetPage] ?? null;
 
-        const res = await api.get<ProductsResponse>("/products", {
-          params: {
-            limit: pageSize,
-            search: debouncedSearch || undefined,
-            startAfterName: cursor || undefined,
-          },
-          signal: ac.signal,
+      const res = await api.get<ProductsResponse>("/products", {
+        params: {
+          limit: pageSize,
+          search: debouncedSearch || undefined,
+          startAfterName: cursor || undefined,
+        },
+        signal: ac.signal,
+      });
+
+      const elapsed = Date.now() - started;
+      if (elapsed < minSkeletonMs) await sleep(minSkeletonMs - elapsed);
+
+      const payload = res.data;
+      const list = Array.isArray(payload.data) ? payload.data : [];
+
+      setItems(list);
+      setNextCursor(payload.nextCursor ?? null);
+
+      if (payload.nextCursor) {
+        setCursorByPage((prev) => {
+          const nextPage = targetPage + 1;
+          if (prev[nextPage] === payload.nextCursor) return prev;
+          return { ...prev, [nextPage]: payload.nextCursor ?? null };
         });
-
-        const elapsed = Date.now() - started;
-        if (elapsed < minSkeletonMs) await sleep(minSkeletonMs - elapsed);
-
-        const payload = res.data;
-        const list = Array.isArray(payload.data) ? payload.data : [];
-
-        setItems(list);
-        setNextCursor(payload.nextCursor ?? null);
-
-        // store cursor for next page if available (cursor paging)
-        if (payload.nextCursor) {
-          setCursorByPage((prev) => {
-            const nextPage = page + 1;
-            if (prev[nextPage] === payload.nextCursor) return prev;
-            return { ...prev, [nextPage]: payload.nextCursor ?? null };
-          });
-        }
-      } catch (e: any) {
-        if (e?.name === "CanceledError" || e?.code === "ERR_CANCELED") return;
-
-        const msg =
-          e?.response?.data?.message ||
-          e?.message ||
-          "Gagal memuat produk. Coba lagi.";
-        setError(String(msg));
-        setItems([]);
-        setNextCursor(null);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (e: any) {
+      if (e?.name === "CanceledError" || e?.code === "ERR_CANCELED") return;
 
-    run();
-  }, [page, cursorByPage, debouncedSearch]);
+      const msg =
+        e?.response?.data?.message ||
+        e?.message ||
+        "Gagal memuat produk. Coba lagi.";
+      setError(String(msg));
+      setItems([]);
+      setNextCursor(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, debouncedSearch]);
 
   const openDeleteConfirm = (p: Product) => {
     setDeleteTarget(p);
@@ -175,23 +159,23 @@ export default function ProductsPage({ onNavigate }: ProductsPageProps) {
 
     try {
       await api.delete(`/products/${deleteTarget.id}`);
+      notify("produk berhasil dihapus", "success");
 
-      // refresh current page
-      // if the page becomes empty after delete and page > 1, go back one page
+      closeDeleteConfirm();
+
+      // reload list (biar produk hilang dari table)
       if (items.length === 1 && page > 1) {
         setPage((p) => p - 1);
       } else {
-        // re-fetch by triggering a cursorByPage state change is messy; just call effect by toggling page
-        setPage((p) => p);
+        await fetchProducts(page);
       }
-
-      closeDeleteConfirm();
     } catch (e: any) {
       const msg =
         e?.response?.data?.message ||
         e?.message ||
         "Gagal menghapus produk. Pastikan kamu login sebagai admin.";
       setError(String(msg));
+      notify("produk gagal dihapus", "error");
     } finally {
       setDeleting(false);
     }
@@ -206,8 +190,24 @@ export default function ProductsPage({ onNavigate }: ProductsPageProps) {
         <div className={styles.titleWrap}>
           <div className={styles.title}>Produk</div>
           <div className={styles.subtitle}>
-            Kelola daftar produk Classic Bakery (5 item per halaman).
+            Live search + pagination 5 item per halaman.
           </div>
+        </div>
+      </div>
+
+      {/* Search kiri + Tambah kanan (sejajar) */}
+      <div className={styles.topBar}>
+        <div className={styles.searchWrap}>
+          <span className={styles.searchIcon} aria-hidden="true">
+            <FontAwesomeIcon icon={faMagnifyingGlass} />
+          </span>
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className={styles.searchInput}
+            placeholder="Cari produk..."
+            aria-label="Cari produk"
+          />
         </div>
 
         <button
@@ -222,59 +222,6 @@ export default function ProductsPage({ onNavigate }: ProductsPageProps) {
         </button>
       </div>
 
-      <div className={styles.toolbar}>
-        <div className={styles.searchWrap}>
-          <span className={styles.searchIcon} aria-hidden="true">
-            <FontAwesomeIcon icon={faMagnifyingGlass} />
-          </span>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className={styles.searchInput}
-            placeholder="Cari produk..."
-            aria-label="Cari produk"
-          />
-        </div>
-
-        <div className={styles.pagination}>
-          <button
-            type="button"
-            className={styles.pageBtn}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={!canGoPrev || loading}
-          >
-            Prev
-          </button>
-
-          <div className={styles.pageNumbers} aria-label="Pagination">
-            {Array.from({ length: maxVisiblePage }, (_, i) => i + 1)
-              .slice(0, 7) // keep it compact
-              .map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  className={`${styles.pageNumber} ${n === page ? styles.pageNumberActive : ""
-                    }`}
-                  onClick={() => setPage(n)}
-                  disabled={loading || (n > page && n > maxVisiblePage)}
-                >
-                  {n}
-                </button>
-              ))}
-            {maxVisiblePage > 7 ? <span className={styles.ellipsis}>…</span> : null}
-          </div>
-
-          <button
-            type="button"
-            className={styles.pageBtn}
-            onClick={() => setPage((p) => p + 1)}
-            disabled={!canGoNext || loading}
-          >
-            Next
-          </button>
-        </div>
-      </div>
-
       {error ? (
         <div className={styles.alertError} role="alert">
           <span className={styles.alertIcon} aria-hidden="true">
@@ -287,9 +234,7 @@ export default function ProductsPage({ onNavigate }: ProductsPageProps) {
       <div className="card">
         <div className="cardHeader">
           <div className={styles.tableTitle}>Daftar Produk</div>
-          <div className={styles.tableHint}>
-            Tips: pencarian berjalan otomatis (live search) tanpa tombol.
-          </div>
+          <div className={styles.tableHint}>Geser tabel ke samping di layar kecil.</div>
         </div>
 
         <div className="cardBody">
@@ -354,9 +299,7 @@ export default function ProductsPage({ onNavigate }: ProductsPageProps) {
                           ) : null}
                         </td>
                         <td>
-                          <span className={styles.categoryPill}>
-                            {p.category || "-"}
-                          </span>
+                          <span className={styles.categoryPill}>{p.category || "-"}</span>
                         </td>
                         <td className={styles.price}>Rp {formatIDRLike(p.price)}</td>
                         <td>
@@ -388,9 +331,7 @@ export default function ProductsPage({ onNavigate }: ProductsPageProps) {
                 ) : (
                   <tr>
                     <td colSpan={5}>
-                      <div className={styles.empty}>
-                        Tidak ada produk ditemukan.
-                      </div>
+                      <div className={styles.empty}>Tidak ada produk ditemukan.</div>
                     </td>
                   </tr>
                 )}
@@ -398,8 +339,29 @@ export default function ProductsPage({ onNavigate }: ProductsPageProps) {
             </table>
           </div>
 
-          <div className={styles.mobileHint}>
-            Jika tabel kepotong di layar kecil, geser ke samping.
+          {/* pagination di bawah table */}
+          <div className={styles.paginationBottom}>
+            <button
+              type="button"
+              className={styles.pageBtn}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={!canGoPrev || loading}
+            >
+              Prev
+            </button>
+
+            <div className={styles.pageInfo}>
+              Halaman <span className={styles.pageStrong}>{page}</span>
+            </div>
+
+            <button
+              type="button"
+              className={styles.pageBtn}
+              onClick={() => setPage((p) => p + 1)}
+              disabled={!canGoNext || loading}
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>
@@ -410,10 +372,8 @@ export default function ProductsPage({ onNavigate }: ProductsPageProps) {
             <div className={styles.modalTitle}>Hapus produk?</div>
             <div className={styles.modalText}>
               Kamu yakin ingin menghapus{" "}
-              <span className={styles.modalStrong}>
-                {deleteTarget?.name || "produk ini"}
-              </span>
-              ? Tindakan ini akan menonaktifkan produk (soft delete).
+              <span className={styles.modalStrong}>{deleteTarget?.name || "produk ini"}</span>
+              ?
             </div>
 
             <div className={styles.modalActions}>

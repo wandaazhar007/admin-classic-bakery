@@ -1,7 +1,6 @@
 @use "../../styles/variables" as v;
 @use "../../styles/responsive" as r;
 
-/* style-nya sengaja dibuat mirip ProductEditPage */
 .page {
   display: flex;
   flex-direction: column;
@@ -356,6 +355,7 @@
   }
 }
 
+.primaryBadge,
 .newBadge {
   position: absolute;
   left: 0.8rem;
@@ -368,7 +368,13 @@
 
   font-size: 1.1rem;
   font-weight: 900;
+}
 
+.primaryBadge {
+  background: rgba(226, 214, 255, 0.92);
+}
+
+.newBadge {
   background: rgba(255, 228, 241, 0.92);
 }
 
@@ -424,5 +430,132 @@
   svg {
     width: 1.6rem;
     height: 1.6rem;
+  }
+}
+
+/* error + loading */
+.alertError {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+
+  border: 0.1rem solid rgba(255, 107, 107, 0.45);
+  background: rgba(255, 107, 107, 0.12);
+  padding: 1.2rem;
+
+  border-radius: v.$radius-lg;
+
+  font-weight: 800;
+  font-size: 1.3rem;
+}
+
+.alertIcon {
+  color: v.$color-danger;
+
+  svg {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+}
+
+.loadingWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+}
+
+.loadingCard {
+  border: v.$border;
+  border-radius: v.$radius-lg;
+  background: v.$color-white;
+  padding: 1.6rem;
+  font-weight: 900;
+}
+
+/* modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: v.$z-modal;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 1.6rem;
+}
+
+.modalBackdropBtn {
+  position: fixed;
+  inset: 0;
+  border: 0;
+  background: rgba(65, 50, 84, 0.32);
+  cursor: pointer;
+}
+
+.modal {
+  position: relative;
+  z-index: calc(v.$z-modal + 1);
+
+  width: 100%;
+  max-width: 46rem;
+
+  background: v.$color-white;
+  border: v.$border;
+  border-radius: v.$radius-lg;
+  box-shadow: v.$shadow-md;
+
+  padding: 1.6rem;
+}
+
+.modalTitle {
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.modalText {
+  margin-top: 0.8rem;
+  color: v.$color-text-muted;
+  font-size: 1.3rem;
+  line-height: 1.6;
+}
+
+.modalActions {
+  margin-top: 1.6rem;
+  display: flex;
+  gap: 0.8rem;
+  justify-content: flex-end;
+
+  @include r.down(md) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.modalBtn {
+  height: 4.4rem;
+  padding: 0 1.2rem;
+
+  border-radius: v.$radius-md;
+  border: v.$border;
+  background: v.$color-white;
+
+  font-weight: 900;
+  font-size: 1.4rem;
+
+  transition: background v.$transition-base;
+
+  &:hover {
+    background: v.$color-pink-soft;
+  }
+}
+
+.modalBtnDanger {
+  border-color: rgba(255, 107, 107, 0.35);
+  background: rgba(255, 107, 107, 0.12);
+
+  &:hover {
+    background: rgba(255, 107, 107, 0.18);
   }
 }

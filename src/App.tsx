@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Navbar from "./components/navbar/Navbar";
 import Sidebar from "./components/sidebar/Sidebar";
 import Footer from "./components/footer/Footer";
 
 import ProductsPage from "./pages/ProductsPage";
 import ProductCreatePage from "./pages/ProductCreatePage";
+import ProductEditPage from "./pages/ProductEditPage";
+import CategoriesPage from "./pages/CategoriesPage";
 import LoginPage from "./pages/LoginPage";
 
 import { useAuth } from "./context/AuthContext";
@@ -14,11 +16,25 @@ type PageInfo = {
   path: string;
 };
 
+type ToastType = "success" | "error";
+
+function parseEditRoute(pathname: string) {
+  // /produk/<id>/edit
+  const match = pathname.match(/^\/produk\/([^/]+)\/edit\/?$/);
+  if (!match) return null;
+  return { productId: match[1] };
+}
+
 export default function App() {
   const { user, loading, logout } = useAuth();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [path, setPath] = useState<string>("");
+
+  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(
+    null
+  );
+  const toastTimerRef = useRef<number | null>(null);
 
   const pages: PageInfo[] = useMemo(
     () => [
@@ -29,6 +45,12 @@ export default function App() {
     ],
     []
   );
+
+  const notify = (message: string, type: ToastType = "success") => {
+    setToast({ message, type });
+    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = window.setTimeout(() => setToast(null), 2800);
+  };
 
   const navigate = (to: string, mode: "push" | "replace" = "push") => {
     if (mode === "replace") window.history.replaceState({}, "", to);
@@ -54,7 +76,7 @@ export default function App() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // Guard: before login, user cannot access other pages
+  // Guard: sebelum login tidak bisa akses halaman lain
   useEffect(() => {
     if (loading) return;
 
@@ -64,7 +86,6 @@ export default function App() {
       return;
     }
 
-    // after login: if still on /login, bring to dashboard
     if (user && path === "/login") {
       navigate("/dashboard", "replace");
     }
@@ -75,9 +96,28 @@ export default function App() {
     "Welcome";
 
   const renderContent = () => {
-    if (path === "/produk") return <ProductsPage onNavigate={navigate} />;
-    if (path === "/produk/tambah")
-      return <ProductCreatePage onNavigate={navigate} />;
+    if (path === "/produk") {
+      return <ProductsPage onNavigate={navigate} notify={notify} />;
+    }
+
+    if (path === "/produk/tambah") {
+      return <ProductCreatePage onNavigate={navigate} notify={notify} />;
+    }
+
+    const editMatch = parseEditRoute(path);
+    if (editMatch) {
+      return (
+        <ProductEditPage
+          productId={editMatch.productId}
+          onNavigate={navigate}
+          notify={notify}
+        />
+      );
+    }
+
+    if (path === "/kategori") {
+      return <CategoriesPage notify={notify} />;
+    }
 
     if (path === "/dashboard") {
       return (
@@ -91,24 +131,6 @@ export default function App() {
           <div className="cardBody">
             <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>
               Dashboard placeholder ✅
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    if (path === "/kategori") {
-      return (
-        <div className="card">
-          <div className="cardHeader">
-            <div style={{ fontSize: "1.8rem", fontWeight: 900 }}>Kategori</div>
-            <div className="muted" style={{ marginTop: "0.4rem" }}>
-              Path: {path}
-            </div>
-          </div>
-          <div className="cardBody">
-            <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>
-              Kategori placeholder ✅
             </div>
           </div>
         </div>
@@ -162,7 +184,6 @@ export default function App() {
     );
   };
 
-  // Full-screen loading (wait for Firebase auth state)
   if (loading) {
     return (
       <div
@@ -180,12 +201,10 @@ export default function App() {
     );
   }
 
-  // Not logged in: only show login page
   if (!user) {
     return <LoginPage onSuccess={() => navigate("/dashboard", "replace")} />;
   }
 
-  // Logged in: show full layout
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar
@@ -195,14 +214,8 @@ export default function App() {
           await logout();
           navigate("/login", "replace");
         }}
-        onProfileClick={() => {
-          // eslint-disable-next-line no-alert
-          alert("Profile clicked.");
-        }}
-        onSettingsClick={() => {
-          // eslint-disable-next-line no-alert
-          alert("Settings clicked.");
-        }}
+        onProfileClick={() => alert("Profile clicked.")}
+        onSettingsClick={() => alert("Settings clicked.")}
       />
 
       <div style={{ flex: 1 }}>
@@ -223,6 +236,31 @@ export default function App() {
       </div>
 
       <Footer />
+
+      {toast ? (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: "fixed",
+            right: "1.6rem",
+            bottom: "1.6rem",
+            zIndex: 9999,
+            padding: "1.2rem 1.4rem",
+            borderRadius: "1.6rem",
+            border: "0.1rem solid rgba(240,230,255,0.9)",
+            background:
+              toast.type === "success"
+                ? "rgba(226,214,255,0.95)"
+                : "rgba(255,107,107,0.14)",
+            fontWeight: 900,
+            fontSize: "1.3rem",
+            boxShadow: "0 1.2rem 3.2rem rgba(65,50,84,0.14)",
+          }}
+        >
+          {toast.message}
+        </div>
+      ) : null}
     </div>
   );
 }
