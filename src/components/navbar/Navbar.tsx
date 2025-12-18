@@ -11,8 +11,8 @@ import {
 
 type NavbarProps = {
   onToggleSidebar?: () => void;
-  onProfileClick?: () => void;
-  onSettingsClick?: () => void;
+  // onProfileClick?: () => void;
+  // onSettingsClick?: () => void;
   onLogoutClick?: () => void;
   onBrandClick?: () => void;
   userLabel?: string; // optional (e.g., "Admin")
@@ -20,8 +20,8 @@ type NavbarProps = {
 
 export default function Navbar({
   onToggleSidebar,
-  onProfileClick,
-  onSettingsClick,
+  // onProfileClick,
+  // onSettingsClick,
   onLogoutClick,
   onBrandClick,
   userLabel,
@@ -36,13 +36,13 @@ export default function Navbar({
         key: "profile",
         label: "Profile",
         icon: faUser,
-        onClick: onProfileClick,
+        // onClick: onProfileClick,
       },
       {
         key: "settings",
         label: "Settings",
         icon: faGear,
-        onClick: onSettingsClick,
+        // onClick: onSettingsClick,
       },
       {
         key: "logout",
@@ -52,7 +52,7 @@ export default function Navbar({
         danger: true,
       },
     ],
-    [onProfileClick, onSettingsClick, onLogoutClick]
+    [onLogoutClick]
   );
 
   useEffect(() => {
