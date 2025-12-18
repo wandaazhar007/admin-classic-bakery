@@ -12,6 +12,12 @@ import {
 type SidebarProps = {
   isOpen: boolean; // mobile open/close state
   onClose?: () => void;
+
+  /**
+   * Optional: kalau kamu nanti pakai react-router `useNavigate()`,
+   * bisa pass ke sini biar lebih native router.
+   */
+  onNavigate?: (to: string) => void;
 };
 
 type MenuItem = {
@@ -20,7 +26,7 @@ type MenuItem = {
   icon: any;
 };
 
-export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ isOpen, onClose, onNavigate }: SidebarProps) {
   const menuItems: MenuItem[] = useMemo(
     () => [
       { label: "Dashboard", to: "/dashboard", icon: faGauge },
@@ -56,10 +62,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   }, [isOpen, onClose]);
 
   useEffect(() => {
-    if (isOpen) {
-      // small accessibility improvement on mobile
-      closeBtnRef.current?.focus();
-    }
+    if (isOpen) closeBtnRef.current?.focus();
   }, [isOpen]);
 
   const isActive = (to: string) => {
@@ -67,9 +70,24 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     return currentPath === to || currentPath.startsWith(`${to}/`);
   };
 
-  const handleLinkClick = () => {
-    // close sidebar after clicking a link on mobile
+  const goTo = (to: string) => {
+    // 1) close sidebar (mobile)
     onClose?.();
+
+    // 2) update active state instantly
+    setCurrentPath(to);
+
+    // 3) navigate without full reload
+    if (onNavigate) {
+      onNavigate(to);
+      return;
+    }
+
+    // fallback: SPA navigation via History API
+    if (window.location.pathname !== to) {
+      window.history.pushState({}, "", to);
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    }
   };
 
   return (
@@ -110,17 +128,17 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         <nav className={styles.nav} aria-label="Main menu">
           {menuItems.map((item) => (
-            <a
+            <button
               key={item.to}
-              href={item.to}
+              type="button"
               className={`${styles.link} ${isActive(item.to) ? styles.active : ""}`}
-              onClick={handleLinkClick}
+              onClick={() => goTo(item.to)}
             >
               <span className={styles.iconWrap} aria-hidden="true">
                 <FontAwesomeIcon icon={item.icon} />
               </span>
               <span className={styles.label}>{item.label}</span>
-            </a>
+            </button>
           ))}
         </nav>
 

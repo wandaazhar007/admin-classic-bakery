@@ -2,8 +2,6 @@
 @use "../../../styles/responsive" as r;
 
 .sidebar {
-  /* Important: sidebar panel alignment is controlled by the parent layout (App.tsx) container.
-     So on desktop, this component should NOT be fixed to viewport-left. */
   position: relative;
 }
 
@@ -48,19 +46,16 @@
 
   padding: 1.6rem;
 
-  /* Desktop: visible, sticky INSIDE container */
   @include r.up(md) {
     position: sticky;
     top: 0;
     height: calc(100vh - 0rem);
   }
 
-  /* Mobile: off-canvas */
   @include r.down(md) {
     position: fixed;
     top: 0;
     left: 0;
-    /* off-canvas should slide from the viewport edge */
     z-index: calc(v.$z-dropdown + 2);
 
     transform: translateX(-105%);
@@ -174,7 +169,12 @@
   padding-top: 0.6rem;
 }
 
+/* IMPORTANT: sekarang link adalah <button> */
 .link {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+
   display: flex;
   align-items: center;
   gap: 1.2rem;
@@ -186,6 +186,9 @@
   background: transparent;
 
   color: v.$color-text-main;
+
+  /* reset default button */
+  outline: none;
 
   transition: background v.$transition-base, border-color v.$transition-base,
     transform v.$transition-fast;
