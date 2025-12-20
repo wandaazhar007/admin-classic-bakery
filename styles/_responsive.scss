@@ -1,3 +1,5 @@
+// styles/_responsive.scss
+@use "sass:map";
 @use "./variables" as v;
 
 // Breakpoints (mobile-first). With html { font-size: 62.5% }, 1rem = 10px.
@@ -14,7 +16,7 @@ $breakpoints: (
 );
 
 @function bp($key) {
-  @return map-get($breakpoints, $key);
+  @return map.get($breakpoints, $key);
 }
 
 // Min-width (mobile-first)
